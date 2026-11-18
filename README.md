@@ -1,8 +1,8 @@
 # Token Radar — radar-3
 
-[![make.fun](https://img.shields.io/badge/make.fun-token--radar--01-blue)](https://make.fun/c/token-radar-01)
-[![owner](https://img.shields.io/badge/owner-zaldie-9cf)](https://github.com/zaldie/token-radar-01)
-[![repo](https://img.shields.io/badge/repo-token--radar--01-green)](https://github.com/zaldie/token-radar-01)
+[![Token Radar 01](https://make.fun/badge/token-radar-01.svg)](https://make.fun/c/token-radar-01)
+[![Rank](https://make.fun/badge/token-radar-01/zaldie/token-radar-01-v3/rank.svg)](https://make.fun/c/token-radar-01)
+[![Reward](https://make.fun/badge/token-radar-01/zaldie/token-radar-01-v3/reward.svg)](https://make.fun/c/token-radar-01)
 
 The best token launch radar: a program that reads a sealed DefiLlama snapshot
 and writes a web dashboard ranking the pre-token protocols by what their launch
