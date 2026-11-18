@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar — pre-token protocols ranked by implied value</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="mast">
+  <div class="wrap mast-in">
+    <div class="mast-copy">
+      <p class="kicker">Token Radar &middot; model radar-3</p>
+      <h1>Which pre-token protocol is worth farming next?</h1>
+      <p class="lede">Every protocol below records no token yet. The board ranks them by an
+      implied value fitted from the snapshot&rsquo;s own live tokens: how the market
+      prices a protocol&rsquo;s size, what its category&rsquo;s tokens trade at, its
+      seven-day growth, how long it has run with no token, and how many chains it
+      reaches. Implied value is this entry&rsquo;s model &mdash; not a price, not a
+      promise.</p>
+    </div>
+    <dl class="stats">
+      <div><dt>Snapshot</dt><dd id="stat-asof">&mdash;</dd></div>
+      <div><dt>Watchlist floor</dt><dd id="stat-floor">&mdash;</dd></div>
+      <div><dt>Board rows</dt><dd id="stat-board">&mdash;</dd></div>
+      <div><dt>Watchlist covered</dt><dd id="stat-watch">&mdash;</dd></div>
+      <div><dt>Live comparables</dt><dd id="stat-comps">&mdash;</dd></div>
+    </dl>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card model" aria-labelledby="model-h">
+    <h2 id="model-h">How implied value is computed</h2>
+    <p class="formula">implied = round( size(TVL) &times; tilt &times; growth &times; maturity &times; reach )</p>
+    <dl class="consts" id="model-consts">
+      <div><dt>Size curve</dt><dd>Fitted from this snapshot&rsquo;s live tokens (see below)</dd></div>
+      <div><dt>Category tilt</dt><dd>Each category&rsquo;s median token price, against the market</dd></div>
+      <div><dt>Growth</dt><dd>7d change clamped to &minus;60% &hellip; +60%; down weeks weigh 0.50, up weeks 0.40</dd></div>
+      <div><dt>Maturity &amp; reach</dt><dd>0.6 + 0.4 &times; (1 &minus; e<sup>&minus;age/365</sup>); 1 + 0.02 per extra chain, max 1.10</dd></div>
+    </dl>
+    <p class="muted">One function scores every row; no protocol name is special-cased.
+    Membership follows the watchlist&rsquo;s own rule as far as the snapshot&rsquo;s ten
+    fields allow: pre-token, not an exchange, no version marker in the name. The
+    snapshot carries no parent-protocol field, so a curator of an existing
+    protocol cannot be told apart from a standalone one.</p>
+  </section>
+
+  <section class="card" aria-labelledby="valid-h">
+    <h2 id="valid-h">The fit, and how it was checked</h2>
+    <p class="muted">The size curve is a log-log fit of market cap on TVL across the
+    live-token protocols in this snapshot, and each category&rsquo;s tilt is its
+    median market-cap-to-TVL ratio (winsorized to 0.01&ndash;3.00, pulled toward
+    the market median when the category has fewer than 4 live tokens). The checks
+    below are computed from the same snapshot, not asserted.</p>
+    <dl class="consts" id="validation-stats"></dl>
+    <p class="muted" id="validation-note"></p>
+    <h3 class="sub-h">What live tokens trade at, by category</h3>
+    <div class="table-wrap">
+      <table id="comp-table">
+        <thead>
+          <tr>
+            <th scope="col">Category</th>
+            <th scope="col">Live tokens</th>
+            <th scope="col">Median mcap / TVL</th>
+            <th scope="col">Tilt</th>
+            <th scope="col">Middle half</th>
+          </tr>
+        </thead>
+        <tbody id="comp-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card filters" aria-label="Filter the board">
+    <div class="field">
+      <label for="f-search">Search</label>
+      <input id="f-search" type="search" placeholder="Name or slug" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="f-category">Category</label>
+      <select id="f-category"><option value="all">All categories</option></select>
+    </div>
+    <div class="field">
+      <label for="f-chain">Chain</label>
+      <select id="f-chain"><option value="all">All chains</option></select>
+    </div>
+    <div class="field">
+      <label for="f-status">Token status</label>
+      <select id="f-status">
+        <option value="pre">Pre-token</option>
+        <option value="live">Live token</option>
+        <option value="all">Pre-token + live</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="f-min-tvl">Min TVL (USD)</label>
+      <input id="f-min-tvl" type="number" min="0" step="1000000" placeholder="0" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label for="f-min-imp">Min implied (USD)</label>
+      <input id="f-min-imp" type="number" min="0" step="1000000" placeholder="0" inputmode="numeric">
+    </div>
+    <button class="btn" id="f-reset" type="button">Reset filters</button>
+    <p class="count" id="result-count" aria-live="polite"></p>
+  </section>
+
+  <section class="card" aria-labelledby="board-h">
+    <h2 id="board-h">The board</h2>
+    <p class="muted">Strongest implied value first. Click a column heading to sort; click a row
+    for its model breakdown and farm plan. <span class="badge badge-pre">Pre-token</span>
+    means the protocol records no token, and <span class="badge badge-watch">Watchlist</span>
+    means the snapshot&rsquo;s watchlist names it. <strong>Rank range</strong> is where
+    the row lands in 200 refits of the comparables &mdash; a wide range means the
+    rank is uncertain, not wrong.</p>
+    <div class="table-wrap">
+      <table id="board">
+        <thead>
+          <tr>
+            <th scope="col"><button type="button" data-sort="rank">Rank</button></th>
+            <th scope="col"><button type="button" data-sort="name">Protocol</button></th>
+            <th scope="col"><button type="button" data-sort="tvl">TVL</button></th>
+            <th scope="col"><button type="button" data-sort="growth">7d</button></th>
+            <th scope="col"><button type="button" data-sort="age">Age</button></th>
+            <th scope="col"><button type="button" data-sort="implied">Implied value</button></th>
+            <th scope="col"><button type="button" data-sort="range">Rank range</button></th>
+            <th scope="col">Token</th>
+          </tr>
+        </thead>
+        <tbody id="board-body"></tbody>
+      </table>
+    </div>
+    <p class="empty" id="board-empty" hidden>No protocol matches these filters. Loosen the
+    search, category, chain, or minimum values to see the board again.</p>
+  </section>
+
+  <section class="card detail" id="detail" aria-labelledby="detail-h">
+    <div class="detail-head">
+      <h2 id="detail-h">Protocol detail</h2>
+      <button class="btn" id="detail-close" type="button" hidden>Close</button>
+    </div>
+    <div id="detail-body">
+      <p class="muted">Select a row on the board to see its model breakdown and farm plan here.</p>
+    </div>
+  </section>
+
+  <section class="card" id="live-sec" aria-labelledby="live-h">
+    <h2 id="live-h">Live tokens &mdash; already trading</h2>
+    <p class="muted">These protocols already have a token trading. The number shown is
+    <strong>market cap &mdash; a market fact, not an implied value</strong>. They are
+    never ranked on the board above, and they are the comparables the size curve
+    and the tilts are fitted from. Top 24 by market cap.</p>
+    <div class="table-wrap">
+      <table id="live-table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Protocol</th>
+            <th scope="col">TVL</th>
+            <th scope="col">7d</th>
+            <th scope="col">Market cap</th>
+            <th scope="col">Token</th>
+          </tr>
+        </thead>
+        <tbody id="live-body"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <p>Data: DefiLlama protocol index, snapshot <span id="foot-asof">&mdash;</span>.
+  Implied values are a model built from that snapshot alone. Nothing here is
+  financial advice; a protocol that records no token may still have one its
+  record does not carry.</p>
+</footer>
+
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
