@@ -476,6 +476,43 @@ function walkForward(
  * 10th and 90th percentile ranks are the row's rank range. Deterministic: one
  * seeded PRNG drives every refit.
  */
+/**
+ * How uncertain is a rank? Every row carries the range of ranks it takes
+ * across 200 bootstrap refits of the comparables, so the dashboard shows a
+ * rank as "12 (9–18)" instead of a bare 12. The refits are stratified by
+ * category: each category's comparables are resampled with replacement, at
+ * the same size, so a category with many tokens cannot crowd out a small
+ * one. The resampling uses a seeded generator (mulberry32, seed 20261114),
+ * so the ranges are deterministic — two runs produce the same lo and hi.
+ * The range itself is the 10th to 90th percentile of the rank across the
+ * 200 refits: a narrow range means the comparables agree on where the
+ * protocol sits, a wide one means the fit could place it almost anywhere.
+ * Ties inside a refit break on the slug, so every refit has a strict order.
+ *
+ * What the board is for: each row also carries a nine-step farm plan, built
+ * from that protocol's own category, chains, TVL and age — no two plans are
+ * the same text. The steps are:
+ *
+ *   1. a fresh wallet that holds only the farming funds, seed kept offline;
+ *   2. the main action for the protocol's category (the planFor step);
+ *   3. a second feature of the same protocol, so the position is not
+ *      a single one-off transaction;
+ *   4. the weekly repeat of that action, while the position is open;
+ *   5. hold the position for holdDaysFor(age) days, long enough that the
+ *      activity is counted in more than one snapshot;
+ *   6. the chain's own gas note — what a transaction costs there and when
+ *      to farm instead of paying peak fees;
+ *   7. claim only from the link the protocol's own points page publishes,
+ *      never from a link somebody sends;
+ *   8. after withdrawing, revoke the approvals the wallet gave the
+ *      protocol, so the wallet is clean;
+ *   9. write the wallet, the dates and every transaction hash in a farm
+ *      log, with the whole plan's cost: capitalFor(TVL) of capital plus
+ *      the gas over the hold weeks.
+ *
+ * Every step carries its own cost and time, and the row carries the total,
+ * so the reader can tell before starting whether a plan is worth it.
+ */
 function bootstrapRanges(
   boardProtocols: SnapshotProtocol[],
   comps: SnapshotProtocol[],
